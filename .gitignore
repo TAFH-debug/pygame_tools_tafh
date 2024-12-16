@@ -1,0 +1,5 @@
+main.py
+*__pycache__*
+dist
+.idea
+deleteme.py

@@ -1,0 +1,21 @@
+[project]
+name = "pygame_tools_tafh"
+version = "0.0.9"
+authors = [
+  { name="Talim Aushakman", email="aushahman2007@gmail.com" },
+]
+description = "Advanced game engine built upon pygame. Includes such things like tweens, game objects, scenes, etc."
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/TAFH-debug/pygame_tools_TAFH"
+Issues = "https://github.com/TAFH-debug/pygame_tools_TAFH/issues"
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

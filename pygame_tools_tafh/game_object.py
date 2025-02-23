@@ -67,7 +67,7 @@ class SurfaceComponent(Component):
         surf = pg.display.get_surface()
         if self.game_object.parent:
             surf = self.game_object.parent.surface.pg_surf
-
+        
         pos = self.game_object.transform.position
         if not self.game_object.parent:
             pos -= GameObject.get_by_tag("camera").transform.position
@@ -121,6 +121,8 @@ class GameObject:
     def update(self):
         for i in self.components:
             i.update()
+        for i in self.childs:
+            i.update()
 
     def on_destroy(self):
         for i in self.childs:
@@ -152,6 +154,11 @@ class GameObject:
     def clone(self) -> "GameObject":
         # TODO
         raise NotImplemented()
+    
+    def clear_surface(self):
+        for i in self.childs:
+            i.clear_surface()
+        self.surface.pg_surf.fill((0, 0, 0, 0))
 
     @staticmethod
     def get_by_tag(tag: str) -> "GameObject":

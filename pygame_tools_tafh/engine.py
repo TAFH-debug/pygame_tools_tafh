@@ -46,26 +46,6 @@ class Engine:
     def register(self, scene: Scene):
         self.scenes.append(scene)
 
-    async def run_engine(self, data: any):
-        if len(self.scenes) == 0:
-            logging.error("No scenes registered.")
-            return
-
-        first_scene = self.scenes[0]
-            
-        self.scene = first_scene
-        self.scene.load(data)
-        
-        logging.info(f"Scene {first_scene.name} loaded")
-        
-        try:
-            while True:
-                await self.iteration()
-                await asyncio.sleep(1 / self.fps)
-        except Exception as e:
-            logging.critical(e.with_traceback(None))
-            exit(1)
-
     async def load_scene(self, scene_name: str, data: any):
         scene = next((x for x in self.scenes if x.name == scene_name), None)
 
@@ -109,4 +89,7 @@ class Engine:
             i.surface.blit()
 
         pg.display.flip()
+
+        for i in GameObject.objects:
+            i.clear_surface()
             

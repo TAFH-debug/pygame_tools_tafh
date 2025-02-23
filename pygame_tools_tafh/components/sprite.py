@@ -55,7 +55,8 @@ class SpriteComponent(Component):
     def set_path(path: str):
         SpriteComponent.path = path
 
-    def draw(self, display: Surface):
+    def draw(self):
+        display = self.game_object.surface.pg_surf
         self.texture.set_alpha(self.opacity)
         blit_image = self.texture
 
@@ -71,10 +72,10 @@ class SpriteComponent(Component):
         if scale != 1:
             cropped = pygame.transform.scale_by(cropped, scale)
 
-        coords = self.game_object.transform.position - GameObject.get_by_tag("camera").transform.position
-        rect = cropped.get_rect(center=coords)
+        rect = cropped.get_rect()
 
         if DEBUG:
             pygame.draw.rect(display, (255, 0, 0), rect, 1)
+            
         display.blit(blit_image, rect)
     

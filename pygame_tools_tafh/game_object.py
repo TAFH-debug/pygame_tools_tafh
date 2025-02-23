@@ -1,4 +1,4 @@
-from typing import TypeVar
+from typing import Callable, TypeVar
 from .vmath import Vector2d, Angle
 import pygame as pg
 
@@ -75,6 +75,15 @@ class SurfaceComponent(Component):
         surf.blit(self.pg_surf, pos.as_tuple())
 
 
+class OnClick(Component):
+    
+    def get_cursor_coords(self):
+        if not self.game_object.parent:
+            return Vector2d.from_tuple(pg.mouse.get_pos()) - Vector2d.from_tuple(pg.display.get_window_size()) // 2 + GameObject.get_by_tag("camera").transform.position
+        
+        return self.game_object.parent.get_component(OnClick).get_cursor_coords() - self.game_object.parent.transform.position
+
+
 T = TypeVar("T")
 
 class GameObject:
@@ -96,6 +105,7 @@ class GameObject:
         self.components = []
         self.surface = SurfaceComponent(Vector2d(800, 600))
         self.add_component(self.surface)
+        self.add_component(OnClick())
 
         self.childs = []
         self.active = True

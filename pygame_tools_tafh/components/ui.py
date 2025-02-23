@@ -3,7 +3,6 @@ import pygame
 
 from ..vmath import Vector2d
 from ..game_object import Component
-from ..globals import camera, DEBUG
 
 class Clicked:
     def __init__(self, color: tuple[int, int, int], border: "Border | None" = None):

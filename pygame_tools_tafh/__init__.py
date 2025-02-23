@@ -6,6 +6,7 @@ from .game_object import *
 from .engine import *
 from .exceptions import *
 from .tween import *
+from .globals import *
 
 __all__ = [
     "Scene",

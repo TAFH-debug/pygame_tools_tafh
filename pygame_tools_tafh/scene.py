@@ -3,9 +3,11 @@ from .game_object import GameObject
 
 class Scene:
 
-    def __init__(self):
-        pass
+    name: str
 
+    def __init__(self, name: str):
+        self.name = name
+        
     def load(self, data: any):
         pass
 

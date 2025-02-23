@@ -1,6 +1,6 @@
 [project]
 name = "pygame_tools_tafh"
-version = "0.0.9"
+version = "0.1.1"
 authors = [
   { name="Talim Aushakman", email="aushahman2007@gmail.com" },
 ]

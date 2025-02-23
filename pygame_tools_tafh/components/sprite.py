@@ -1,11 +1,39 @@
 import pygame
 import os
 
-from ..globals import camera
-from ..game_object import Component
+from ..vmath import Vector2d
+from ..game_object import Component, Transform, GameObject
 from pygame import Surface
 
 DEBUG = True
+
+class SurfaceComponent(Component):
+    layer: int
+    pg_surf: pygame.Surface
+
+    def __init__(self, tag, size: Vector2d, layer: int = -1):
+        super().__init__(tag)
+        self.pg_surf = pygame.Surface(size.as_tuple())
+        self.layer = layer
+
+    # def draw(self):
+    #     if self.game_object.contains_component(Color):
+    #         self.pg_surf.fill(self.game_object.get_component(Color).color)
+    
+    def blit(self):
+        for child in self.game_object.childs:
+            if child.contains_component(Surface):
+                child.get_component(Surface).blit()
+
+        if self.game_object.tag == "pygame_screen":
+            return
+        
+        surf = self.game_object.parent.get_component(SurfaceComponent) 
+
+        if self.game_object.tag in ("screen", "pygame_screen"):
+            surf.pg_surf.blit(self.pg_surf, self.game_object.transform.position.as_tuple())
+        else:
+            surf.pg_surf.blit(self.pg_surf, (self.game_object.transform.position - GameObject.get_by_tag("camera").get_component(Transform).position).as_tuple())
 
 class SpriteComponent(Component):
     path: str = ''
@@ -43,7 +71,7 @@ class SpriteComponent(Component):
         if scale != 1:
             cropped = pygame.transform.scale_by(cropped, scale)
 
-        coords = camera.normalize(self.game_object.transform.position)
+        coords = self.game_object.transform.position - GameObject.get_by_tag("camera").transform.position
         rect = cropped.get_rect(center=coords)
 
         if DEBUG:

@@ -1,6 +1,6 @@
 from typing import TypeVar
-from pygame_tools_tafh.vmath import Vector2d, Angle
-from pygame import Surface
+from .vmath import Vector2d, Angle
+import pygame as pg
 
 class Component:
     game_object: "GameObject"
@@ -14,7 +14,7 @@ class Component:
     def init(self, go: "GameObject"):
         self.game_object = go
 
-    def draw(self, display: Surface):
+    def draw(self):
         pass
 
     def update(self):
@@ -53,9 +53,29 @@ class Transform:
     def add_child(self, child: "Transform"):
         self.childs.append(child)
 
+class SurfaceComponent(Component):
+    layer: int 
+    pg_surf: pg.Surface
 
-T = TypeVar("T", bound=Component)
+    def __init__(self, size: Vector2d, layer: int = 0):
+        self.pg_surf = pg.Surface(size.as_tuple(), pg.SRCALPHA, 32)
+        if False:
+            self.pg_surf.set_alpha(128)
+        self.layer = layer
 
+    def blit(self):
+        surf = pg.display.get_surface()
+        if self.game_object.parent:
+            surf = self.game_object.parent.surface.pg_surf
+
+        pos = self.game_object.transform.position
+        if not self.game_object.parent:
+            pos -= GameObject.get_by_tag("camera").transform.position
+
+        surf.blit(self.pg_surf, pos.as_tuple())
+
+
+T = TypeVar("T")
 
 class GameObject:
     """
@@ -64,26 +84,39 @@ class GameObject:
     components: list[Component]
     active: bool
     tag: str
+    parent: "GameObject | None"
     transform: Transform
+    surface: SurfaceComponent
     childs: list["GameObject"]
 
+    tag_objects: dict[str, "GameObject"] = {}
     objects: list["GameObject"] = []
 
-    def __init__(self, tag: str):
+    def __init__(self, tag: str, root: bool = True):
         self.components = []
+        self.surface = SurfaceComponent(Vector2d(800, 600))
+        self.add_component(self.surface)
+
         self.childs = []
         self.active = True
         self.tag = tag
+        self.parent = None
         self.transform = Transform(self)
-        GameObject.objects.append(self)
 
-    def draw(self, display: Surface):
+        if (self.tag in GameObject.tag_objects.keys()):
+            raise Exception(f"Tried to create two object with same tag: {self.tag}")
+
+        if root:
+            GameObject.objects.append(self)
+            
+        GameObject.tag_objects[self.tag] = self
+
+    def draw(self):
         for component in self.components:
-            component.draw(display)
-        if not "child" in self.__dir__():
-            return 
+            component.draw()
         for child in self.childs:
-            child.draw(display)
+            child.draw()
+            child.surface.blit()
 
     def update(self):
         for i in self.components:
@@ -102,6 +135,16 @@ class GameObject:
             if isinstance(i, component):
                 return i
         raise Exception(f"No such component: {component}")
+    
+    def contains_component(self, component: type[T]) -> T:
+        for i in self.components:
+            if isinstance(i, component):
+                return True
+        return False
+    
+    def add_child(self, child: "GameObject"):
+        child.parent = self
+        self.childs.append(child)
 
     def set_active(self, active: bool):
         self.active = active
@@ -112,14 +155,16 @@ class GameObject:
 
     @staticmethod
     def get_by_tag(tag: str) -> "GameObject":
-        for i in GameObject.objects:
-            if i.tag == tag:
-                return i
-        raise Exception("No such object")
+        if not tag in GameObject.tag_objects.keys():
+            raise KeyError(f"No object with tag: {tag}")
+        return GameObject.tag_objects[tag]
 
     @staticmethod
     def destroy(obj: "GameObject"):
         obj.on_destroy()
+
+    def __str__(self):
+        return f"GameObject {self.tag}"
 
 
 class Prefab:

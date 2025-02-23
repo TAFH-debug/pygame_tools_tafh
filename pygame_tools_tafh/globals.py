@@ -1,6 +1,6 @@
-from pygame_tools_tafh import Camera
+from . import GameObject
 
 FPS = 60
 DEBUG = False
-camera = Camera()
+camera = GameObject("camera")
 events = []

@@ -11,6 +11,8 @@ class Engine:
 
     instance = None
 
+    scenes: list[Scene]
+    scene: Scene
     logger: logging.Logger
     scene: Scene
     display: pg.Surface
@@ -18,6 +20,8 @@ class Engine:
 
     def __init__(self, app_name: str, fps: int, resolution: tuple[int, int] = (800, 600)):
         self.fps = fps
+        self.scenes = []
+        self.scene = None
         self.app_name = app_name
         self.logger = logging.getLogger()
         self.logger.setLevel(logging.INFO)
@@ -37,15 +41,45 @@ class Engine:
         logging.basicConfig()
         self.display = pg.display.set_mode(resolution)
         pg.display.set_caption(self.app_name)
-        logging.info("Game initialized.")
+        logging.info("Engine initialized.")
 
-    async def run(self, scene: Scene, data: any):
-        if scene:
+    def register(self, scene: Scene):
+        self.scenes.append(scene)
+
+    async def run_engine(self, data: any):
+        if len(self.scenes) == 0:
+            logging.error("No scenes registered.")
+            return
+
+        first_scene = self.scenes[0]
+            
+        self.scene = first_scene
+        self.scene.load(data)
+        
+        logging.info(f"Scene {first_scene.name} loaded")
+        
+        try:
+            while True:
+                await self.iteration()
+                await asyncio.sleep(1 / self.fps)
+        except Exception as e:
+            logging.critical(e.with_traceback(None))
+            exit(1)
+
+    async def load_scene(self, scene_name: str, data: any):
+        scene = next((x for x in self.scenes if x.name == scene_name), None)
+
+        if not scene:
+            logging.error(f"Scene {scene_name} not found.")
+            return
+        
+        if self.scene:
             scene.destroy()
             
         self.scene = scene
         scene.load(data)
         
+        logging.info(f"Scene {scene.name} loaded")
         try:
             while True:
                 await self.iteration()
@@ -71,7 +105,8 @@ class Engine:
 
         self.display.fill((0, 0, 0))
         for i in GameObject.objects:
-            i.draw(self.display)
+            i.draw()
+            i.surface.blit()
 
         pg.display.flip()
             

@@ -10,19 +10,24 @@ Pygame Tools Tafh is an advanced game engine built upon pygame. Includes such th
 # main.py
 import asyncio
 from pygame_tools_tafh import *
+from pygame_tools_tafh.vmath import *
+    
+class GameScene(Scene):
 
-class Scene:
+    def load(self, data):
+        obj = GameObject("obj")
+        obj.add_component(RectShapeComponent((255, 0, 0), Vector2d(100, 100)))
 
-    def load(self):
-        label = GameObject("label")
-        label.add_component(LabelComponent("Hello, World!", (255, 0, 0)))
-        label.transform.position = Vector2d(400, 300)
+        obj2 = GameObject("obj2")
+        obj2.add_component(SpriteComponent("image.png", (100, 200)))
+        obj2.transform.position = Vector2d(100, 100)
 
-engine = Engine("Glorytopia", 60, (800, 600))
+
+engine = Engine("Example", 60, (800, 600))
 
 def main():
-    asyncio.run(engine.run(Scene()))
-    
+    engine.register(GameScene("example"))
+    asyncio.run(engine.load_scene("example", None))
 
 if __name__ == "__main__":
     main()

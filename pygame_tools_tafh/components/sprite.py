@@ -1,11 +1,16 @@
 import pygame
 import os
 
+from pygame_tools_tafh.vmath.vector import Vector2d
+
 from ..game_object import Component
 
-DEBUG = True
-
 class SpriteComponent(Component):
+    """A component to load sprites.
+
+    path    Base path to all sprites.
+    loaded  Cache for the sprites.
+    """
     path: str = ''
     loaded: dict = {}
 
@@ -42,10 +47,7 @@ class SpriteComponent(Component):
         if scale != 1:
             cropped = pygame.transform.scale_by(cropped, scale)
 
-        rect = cropped.get_rect()
+        rect = cropped.get_rect(center=(Vector2d.from_tuple(display.get_size()) / 2).as_tuple())
 
-        if DEBUG:
-            pygame.draw.rect(display, (255, 0, 0), rect, 1)
-            
-        display.blit(blit_image, rect)
+        display.blit(cropped, rect)
     

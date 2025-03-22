@@ -2,7 +2,8 @@ import asyncio
 from typing import Callable
 
 class Tweens:
-
+    """A class for creating background functions that will change some property over time.
+    """
     tweens: list = []
 
     def __init__(self):
@@ -17,6 +18,18 @@ class Tweens:
             delay: int = 0,
             after_tween: Callable | None = None,
             update_tween: Callable | None = None):
+        """Add new tween.
+
+        Args:
+            target          Object that will be changed.
+            property        Property that will be changed. Must be float.
+            fr              Value to start from.
+            to              Value to end on.
+            repeat          Amount of times to repeat.
+            duration        Duration of the change.
+            after_tween     Function that will be called after the tween is ended.
+            update_tween    Function that will be called every tick while the tween is on going.
+        """
         loop = asyncio.get_event_loop()
         loop.create_task(self.start_tween(target, property, fr, to, repeat, duration, delay, after_tween, update_tween))
         

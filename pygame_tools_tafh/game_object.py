@@ -1,8 +1,13 @@
-from typing import Callable, TypeVar
+from typing import TypeVar
 from .vmath import Vector2d, Angle
+
 import pygame as pg
 
 class Component:
+    """Base class for all components.
+
+    game_object     Associated GameObject.
+    """
     game_object: "GameObject"
 
     class ComponentData:
@@ -28,11 +33,17 @@ class Component:
 
 
 class Transform:
+    """Contains all of the necessary data about GameObject's location.
+
+    game_object     Associated game object.
+    position        Position of the center of the game_object.
+    angle           Angle for which game_object is rotated.
+
+    """
     game_object: "GameObject"
     position: Vector2d  # position of CENTER
     angle: Angle
     scale: float
-    childs: list["Transform"]
 
     def __init__(self, obj: "GameObject"):
         self.game_object = obj
@@ -40,11 +51,6 @@ class Transform:
         self.angle = Angle()
         self.scale = 1
         self.childs = []
-
-    def translate(self, trn: Vector2d):
-        self.position += trn
-        for child in self.childs:
-            child.translate(trn)
 
     def rotate(self, angle: Angle):
         self.angle += angle
@@ -54,14 +60,14 @@ class Transform:
         self.childs.append(child)
 
 class SurfaceComponent(Component):
-    layer: int 
+    """Necessary component to handle everything with game_object's display
+
+    pg_surf     Associated pygame.Surface 
+    """
     pg_surf: pg.Surface
 
-    def __init__(self, size: Vector2d, layer: int = 0):
+    def __init__(self, size: Vector2d):
         self.pg_surf = pg.Surface(size.as_tuple(), pg.SRCALPHA, 32)
-        if False:
-            self.pg_surf.set_alpha(128)
-        self.layer = layer
 
     def blit(self):
         surf = pg.display.get_surface()
@@ -72,23 +78,43 @@ class SurfaceComponent(Component):
         if not self.game_object.parent:
             pos -= GameObject.get_by_tag("camera").transform.position
 
-        surf.blit(self.pg_surf, pos.as_tuple())
+        surf.blit(self.pg_surf, (pos + Vector2d.from_tuple(surf.get_size()) / 2 - Vector2d.from_tuple(self.pg_surf.get_size()) / 2).as_tuple())
 
 
-class OnClick(Component):
-    
+class CoordinatesComponent(Component):
+    """Necessary component to get global object's coordinates.
+    """
+
     def get_cursor_coords(self):
+        """Function to get cursor's coordinates in appropriate coordinate system.
+        
+        Returns:
+            Coordinates of the cursor relative to the center of the game object.
+        """
         if not self.game_object.parent:
             return Vector2d.from_tuple(pg.mouse.get_pos()) - Vector2d.from_tuple(pg.display.get_window_size()) // 2 + GameObject.get_by_tag("camera").transform.position
         
-        return self.game_object.parent.get_component(OnClick).get_cursor_coords() - self.game_object.parent.transform.position
+        return self.game_object.parent.get_component(CoordinatesComponent).get_cursor_coords() - self.game_object.parent.transform.position
+    
+    def get_absolute_coords(self):
+        """Function to get absolute game_object's coordinates.
 
+        Returns:
+            game_object's absolute coordinates.
+        """
+        if not self.game_object.parent:
+            return self.game_object.transform.position
+        
+        return self.game_object.parent.get_component(CoordinatesComponent).get_absolute_coords() + self.game_object.transform.position
+    
 
 T = TypeVar("T")
 
 class GameObject:
-    """
-    Inspired by Unity.
+    """Base of this engine. Every object in the game must be implemented by creating a game object and adding necessary components.
+
+    active      If false, this game object won't be displayed and updated. The same is true for it's childs.
+    tag         Tag of the object. There can't be two game objects with the same tag.
     """
     components: list[Component]
     active: bool
@@ -101,11 +127,11 @@ class GameObject:
     tag_objects: dict[str, "GameObject"] = {}
     objects: list["GameObject"] = []
 
-    def __init__(self, tag: str, root: bool = True):
+    def __init__(self, tag: str, root: bool = True, surf_size: Vector2d = Vector2d(800, 600)):
         self.components = []
-        self.surface = SurfaceComponent(Vector2d(800, 600))
+        self.surface = SurfaceComponent(surf_size)
         self.add_component(self.surface)
-        self.add_component(OnClick())
+        self.add_component(CoordinatesComponent())
 
         self.childs = []
         self.active = True
@@ -122,6 +148,16 @@ class GameObject:
         GameObject.tag_objects[self.tag] = self
 
     def draw(self):
+        center = self.get_component(CoordinatesComponent).get_absolute_coords()
+        screen_tl = GameObject.get_by_tag("camera").transform.position - Vector2d.from_tuple(pg.display.get_window_size()) / 2
+        screen_br = GameObject.get_by_tag("camera").transform.position + Vector2d.from_tuple(pg.display.get_window_size()) / 2
+        obj_tl = center - Vector2d.from_tuple(self.surface.pg_surf.get_size()) / 2
+        obj_br = center + Vector2d.from_tuple(self.surface.pg_surf.get_size()) / 2
+
+        # Draw optimization. No need to draw the object if it is out of screen's bounds.
+        if ((screen_br.x < obj_tl.x or screen_tl.x > obj_br.x) or (screen_br.y < obj_tl.y or screen_tl.y > obj_br.y)):
+            return
+
         for component in self.components:
             component.draw()
         for child in self.childs:
@@ -182,37 +218,3 @@ class GameObject:
 
     def __str__(self):
         return f"GameObject {self.tag}"
-
-
-class Prefab:
-    """
-    Saves all the data about the object. Can be saved or loaded from the file.
-    """
-    components: list[Component.ComponentData]
-
-    def __init__(self, game_object: GameObject):
-        self.components = []
-        for i in game_object.components:
-            self.components.append(i.get_data())
-
-    def load(self, filename: str):
-        raise NotImplemented
-
-    def save(self):
-        raise NotImplemented
-
-
-class GameObjectData:
-    """
-    Shorthand way to register a prefab to scene.
-    """
-    position: Vector2d
-    angle: Angle
-    components: list[Component]
-
-    def __init__(self, pos=Vector2d(), angle=Angle(), *args: Component):
-        self.position = pos
-        self.angle = angle
-        self.components = list(args)
-
-

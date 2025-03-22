@@ -7,7 +7,7 @@ class Host:
     def __init__(self):
         self.players = []
 
-    def emit(self, ):
+    def emit(self):
         pass
 
 

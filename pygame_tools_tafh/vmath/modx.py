@@ -1,4 +1,12 @@
 class Modx:
+    """Value by the certain modulus.
+
+    value   Value.
+    x       Modulus.
+    """
+
+    value: int
+    x: int
 
     def __init__(self, value: int = 0, x: int = 4) -> None:
         self.value = value % x

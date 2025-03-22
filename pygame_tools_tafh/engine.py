@@ -1,4 +1,4 @@
-import asyncio
+import traceback
 from .scene import Scene
 from .game_object import GameObject
 from .globals import events
@@ -8,7 +8,12 @@ import logging
 
 
 class Engine:
+    """Root class of the engine. Can't be instantiated more than once.
 
+    display     Basically pygame.display.get_display()
+    scene       Current loaded scene
+    scenes      List of all registered scenes
+    """
     instance = None
 
     scenes: list[Scene]
@@ -61,11 +66,12 @@ class Engine:
         
         logging.info(f"Scene {scene.name} loaded")
         try:
+            clock = pg.time.Clock()
             while True:
                 await self.iteration()
-                await asyncio.sleep(1 / self.fps)
+                clock.tick(self.fps)
         except Exception as e:
-            logging.critical(e.with_traceback(None))
+            logging.critical(traceback.format_exc())
             exit(1)
 
     def event_processing(self, event: pg.event.Event):

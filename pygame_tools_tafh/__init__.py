@@ -1,28 +1,33 @@
 from .config import *
-from .components import *
 from .components.ui import *
-from .vmath import *
+from .components.keybind import *
+from .components.movement import *
+from .components.sprite import *
 from .game_object import *
 from .engine import *
-from .exceptions import *
 from .tween import *
 from .globals import *
+from . import vmath
 
 __all__ = [
-    "Scene",
-    "Vector2d",
-    "GameObject",
     "Engine",
-    "Prefab",
-    "Component",
+    "GameObject",
+    "CoordinatesComponent",
     "Transform",
-    "Clicked",
-    "Border",
-    "Text",
-    "CriticalError",
-    "WarningError",
-    "NoComponentError",
+    "Component",
+    "SurfaceComponent",
+    "camera",
+    "events",
+    "Scene",
+    "Tweens",
+    "vmath",
+    "KeybindComponent",
+    "MovementComponent",
     "SpriteComponent",
-    "Tweens"
+    "LabelComponent",
+    "ShapeComponent",
+    "RectShapeComponent",
+    "CircleShapeComponent",
+    "ButtonComponent",
 ]
 

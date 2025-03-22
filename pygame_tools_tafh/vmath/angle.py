@@ -4,8 +4,9 @@ from .vector import Vector2d
 
 
 class Angle:
-    """
-    class that represent angles in radians
+    """Class that represent angles in radians.
+
+    angle   Angle in radians.
     """
 
     angle: float
@@ -26,6 +27,11 @@ class Angle:
         return self.angle
 
     def to_vector(self) -> Vector2d:
+        """Breaks angle into it's cosine and sine components.
+
+        Returns:
+            Vectored value of the angle.
+        """
         return Vector2d(cos(self.angle), sin(self.angle))
 
     def __add__(self, other: "Angle") -> "Angle":

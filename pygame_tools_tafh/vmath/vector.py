@@ -2,8 +2,10 @@ from typing import Callable
 from .angle import *
 
 class Vector2d:
-    """
-    Class to represent a pair of floats.
+    """Class to represent a pair of floats.
+
+    x   X component of the vector
+    y   Y component of the vector
     """
 
     x: float
@@ -20,7 +22,9 @@ class Vector2d:
     def as_tuple(self) -> tuple[float, float]:
         return self.x, self.y
 
-    def norm(self) -> float:
+    def mod(self) -> float:
+        """Returns length of the vector.
+        """
         return sqrt((self.x ** 2) + (self.y ** 2))
 
     def intx(self) -> int:

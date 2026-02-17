@@ -1,4 +1,4 @@
-from .game_object import GameObject
+from .core.game_object import GameObject
 
 
 class Scene:

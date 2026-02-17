@@ -1,8 +1,7 @@
 import traceback
 from .scene import Scene
-from .game_object import GameObject
-from .globals import events
-
+from .core.game_object import GameObject
+from .tween import Tween
 import pygame as pg
 import logging
 
@@ -47,6 +46,7 @@ class Engine:
         self.display = pg.display.set_mode(resolution)
         pg.display.set_caption(self.app_name)
         logging.info("Engine initialized.")
+        GameObject("camera")
 
     def register(self, scene: Scene):
         self.scenes.append(scene)
@@ -68,8 +68,8 @@ class Engine:
         try:
             clock = pg.time.Clock()
             while True:
-                await self.iteration()
-                clock.tick(self.fps)
+                dt = clock.tick(self.fps)
+                await self.iteration(dt)
         except Exception as e:
             logging.critical(traceback.format_exc())
             exit(1)
@@ -79,8 +79,7 @@ class Engine:
             logging.info("Quitting")
             exit()
 
-    async def iteration(self):
-        
+    async def iteration(self, dt: int):
         events = pg.event.get()
         
         for event in events:
@@ -89,13 +88,10 @@ class Engine:
         for i in GameObject.objects:
             i.update()
 
+        Tween.update_all(dt)
         self.display.fill((0, 0, 0))
-        for i in GameObject.objects:
+        for i in sorted(GameObject.objects, key=lambda x: -x.z_index):
             i.draw()
-            i.surface.blit()
 
         pg.display.flip()
-
-        for i in GameObject.objects:
-            i.clear_surface()
             

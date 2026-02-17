@@ -1,4 +1,4 @@
-from ..game_object import GameObject, Component
+from ..core.game_object import GameObject, Component
 from typing import Callable, Any
 import pygame as pg
 
